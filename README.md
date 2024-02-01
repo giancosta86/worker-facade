@@ -38,7 +38,9 @@ The practical aspects of this library can be summarized as follows:
 
   This way:
 
-  - in the worker script, just call `RequestListener.register(self, <your listener function>)` - without having to take care of message events
+  - in the worker script, just call `RequestListener.register(global["self"], <your listener function>)` - without having to take care of message events.
+
+    **Please, note**: it is recommended to pass `global["self"]` as the first parameter, for compatibility in different environments
 
   - when mocking the worker, especially in tests, just call `WorkerMock.create(<your listener function>)` to have a full-fledged mock
 
