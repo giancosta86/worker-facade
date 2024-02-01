@@ -1,7 +1,7 @@
 export namespace WorkerFacade {
   export type EventType = "message" | "messageerror" | "error";
 
-  export interface EventListeners<TMessage> {
+  export interface EventListenerMap<TMessage> {
     message: (message: TMessage) => void;
     messageerror: (error: Error) => void;
     error: (error: Error) => void;
@@ -10,14 +10,14 @@ export namespace WorkerFacade {
 
 export interface WorkerFacade<TRequest, TResponse> {
   addListener<E extends WorkerFacade.EventType>(
-    type: E,
-    listener: WorkerFacade.EventListeners<TResponse>[E]
+    eventType: E,
+    listener: WorkerFacade.EventListenerMap<TResponse>[E]
   ): void;
 
   removeListener<E extends WorkerFacade.EventType>(
-    type: E,
-    listener: WorkerFacade.EventListeners<TResponse>[E]
+    eventType: E,
+    listener: WorkerFacade.EventListenerMap<TResponse>[E]
   ): void;
 
-  postMessage(message: TRequest): void;
+  postMessage(request: TRequest): void;
 }
