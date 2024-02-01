@@ -1,5 +1,6 @@
 import { join } from "node:path";
 import { Worker } from "node:worker_threads";
+import { WorkerFacade } from "./WorkerFacade";
 
 describe("Request listener", () => {
   describe("when registering within a worker thread", () => {
@@ -9,17 +10,7 @@ describe("Request listener", () => {
 
         const worker = new Worker(join(__dirname, "test", "worker-thread.ts"), {
           execArgv: ["--require", "@swc-node/register"]
-        });
-        worker.on("message", response => {
-          const expectedResponse = expectedResponses.shift();
-          if (expectedResponse === undefined) {
-            return resolve();
-          }
-
-          expect(response).toBe(expectedResponse);
-        });
-        worker.on("error", reject);
-        worker.on("exit", code => {
+        }).on("exit", code => {
           if (!code) {
             resolve();
           } else {
@@ -27,11 +18,24 @@ describe("Request listener", () => {
           }
         });
 
-        worker.postMessage(0);
-        worker.postMessage(2);
-        worker.postMessage(5);
-        worker.postMessage(8);
-        worker.postMessage(-1);
+        const workerFacade: WorkerFacade<number, number> = worker;
+
+        workerFacade.addListener("message", response => {
+          const expectedResponse = expectedResponses.shift();
+          if (expectedResponse === undefined) {
+            return resolve();
+          }
+
+          expect(response).toBe(expectedResponse);
+        });
+
+        workerFacade.addListener("error", reject);
+
+        workerFacade.postMessage(0);
+        workerFacade.postMessage(2);
+        workerFacade.postMessage(5);
+        workerFacade.postMessage(8);
+        workerFacade.postMessage(-1);
       }));
   });
 });
