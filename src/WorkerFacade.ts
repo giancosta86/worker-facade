@@ -1,23 +1,25 @@
-export namespace WorkerFacade {
-  export type EventType = "message" | "messageerror" | "error";
+export type EventType = "message" | "messageerror" | "error";
 
-  export interface EventListenerMap<TMessage> {
-    message: (message: TMessage) => void;
-    messageerror: (error: Error) => void;
-    error: (error: Error) => void;
-  }
+export type MessageListener<T> = (message: T) => void;
+
+export type ErrorListener = (error: Error) => void;
+
+export interface EventListenerMap<TMessage> {
+  message: MessageListener<TMessage>;
+  messageerror: ErrorListener;
+  error: ErrorListener;
 }
 
 export interface WorkerFacade<TRequest, TResponse> {
-  addListener<E extends WorkerFacade.EventType>(
+  addListener<E extends EventType>(
     eventType: E,
-    listener: WorkerFacade.EventListenerMap<TResponse>[E]
+    listener: EventListenerMap<TResponse>[E]
   ): void;
 
-  removeListener<E extends WorkerFacade.EventType>(
+  removeListener<E extends EventType>(
     eventType: E,
-    listener: WorkerFacade.EventListenerMap<TResponse>[E]
+    listener: EventListenerMap<TResponse>[E]
   ): void;
 
-  postMessage(request: TRequest): void;
+  postMessage(request: TRequest, ...options: readonly any[]): void;
 }

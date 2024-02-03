@@ -16,7 +16,6 @@ export class SerializingChannel<T> {
       clonedMessage = structuredClone(message);
     } catch (err) {
       onMessageError(err as Error);
-
       return;
     }
 

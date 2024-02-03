@@ -1,5 +1,11 @@
 import { RequestListener } from "./RequestListener";
-import { WorkerFacade } from "./WorkerFacade";
+import {
+  ErrorListener,
+  EventListenerMap,
+  EventType,
+  MessageListener,
+  WorkerFacade
+} from "./WorkerFacade";
 import { SerializingChannel } from "./SerializingChannel";
 
 export class WorkerMock<TRequest, TResponse>
@@ -12,8 +18,8 @@ export class WorkerMock<TRequest, TResponse>
   }
 
   private readonly listeners: Map<
-    WorkerFacade.EventType,
-    ((value: any) => void)[]
+    EventType,
+    (MessageListener<TResponse> | ErrorListener)[]
   > = new Map([
     ["message", []],
     ["messageerror", []],
@@ -31,7 +37,9 @@ export class WorkerMock<TRequest, TResponse>
         this.listeners
           .get("error")!
           .forEach(listener =>
-            listener(err instanceof Error ? err : new Error(String(err)))
+            (listener as ErrorListener)(
+              err instanceof Error ? err : new Error(String(err))
+            )
           );
       }
     },
@@ -39,19 +47,23 @@ export class WorkerMock<TRequest, TResponse>
     onMessageError: messageError => {
       this.listeners
         .get("messageerror")!
-        .forEach(listener => listener(messageError));
+        .forEach(listener => (listener as ErrorListener)(messageError));
     }
   });
 
   private readonly responseChannel = new SerializingChannel<TResponse>({
     onMessage: response => {
-      this.listeners.get("message")!.forEach(listener => listener(response));
+      this.listeners
+        .get("message")!
+        .forEach(listener =>
+          (listener as MessageListener<TResponse>)(response)
+        );
     },
 
     onMessageError: messageError => {
       this.listeners
         .get("messageerror")!
-        .forEach(listener => listener(messageError));
+        .forEach(listener => (listener as ErrorListener)(messageError));
     }
   });
 
@@ -59,9 +71,9 @@ export class WorkerMock<TRequest, TResponse>
     private readonly requestListener: RequestListener<TRequest, TResponse>
   ) {}
 
-  addListener<E extends WorkerFacade.EventType>(
+  addListener<E extends EventType>(
     eventType: E,
-    listener: WorkerFacade.EventListenerMap<TResponse>[E]
+    listener: EventListenerMap<TResponse>[E]
   ): void {
     switch (eventType) {
       case "message":
@@ -75,9 +87,9 @@ export class WorkerMock<TRequest, TResponse>
     }
   }
 
-  removeListener<E extends WorkerFacade.EventType>(
+  removeListener<E extends EventType>(
     eventType: E,
-    listener: WorkerFacade.EventListenerMap<TResponse>[E]
+    listener: EventListenerMap<TResponse>[E]
   ): void {
     switch (eventType) {
       case "message":

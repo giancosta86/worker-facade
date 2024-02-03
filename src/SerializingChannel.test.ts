@@ -2,7 +2,7 @@ import { SerializingChannel } from "./SerializingChannel";
 
 describe("Serializing channel", () => {
   describe("when sending a serializable message", () => {
-    it("should call just the message event listener", () => {
+    it("should call just the message listener", () => {
       const messageListener = jest.fn();
       const messageErrorListener = jest.fn();
 
@@ -19,7 +19,7 @@ describe("Serializing channel", () => {
   });
 
   describe("when sending a non-serializable message", () => {
-    it("should call just the message-error event listener", () => {
+    it("should call just the message-error listener", () => {
       const messageListener = jest.fn();
       const messageErrorListener = jest.fn();
 

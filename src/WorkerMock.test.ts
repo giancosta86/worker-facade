@@ -35,9 +35,9 @@ namespace YellowstoneWorker {
 }
 
 describe("Mock worker", () => {
-  const goodRequest = { name: "Yogi", age: 38 };
+  const goodRequest: TestRequest = { name: "Yogi", age: 38 };
 
-  const badRequest = {
+  const badRequest: TestRequest = {
     ...goodRequest,
     callback: () => "Functions are not serializable"
   };
@@ -208,6 +208,29 @@ describe("Mock worker", () => {
       });
     });
 
+    describe("when the request listener throws an error", () => {
+      it("should call the non-removed error listeners", () => {
+        const worker = WorkerMock.create<TestRequest, TestResponse>(() => {
+          throw new Error("Ciop");
+        });
+
+        const firstListener = jest.fn();
+        const secondListener = jest.fn();
+
+        worker.addListener("error", firstListener);
+        worker.addListener("error", secondListener);
+
+        worker.removeListener("error", firstListener);
+
+        worker.postMessage(goodRequest);
+
+        expect(firstListener).not.toHaveBeenCalled();
+        expect(secondListener).toHaveBeenCalledExactlyOnceWith(
+          new Error("Ciop")
+        );
+      });
+    });
+
     describe("when the event type is not supported", () => {
       it("should throw", () => {
         const worker = YellowstoneWorker.create();
@@ -228,7 +251,7 @@ describe("Mock worker", () => {
   });
 
   describe("when the request listener throws", () => {
-    describe("when throwing an error", () => {
+    describe("when throwing an Error", () => {
       it("should call just the error listeners", () => {
         const worker = WorkerMock.create<TestRequest, TestResponse>(() => {
           throw new Error("Dodo");
@@ -251,7 +274,7 @@ describe("Mock worker", () => {
     });
 
     describe("when throwing a number", () => {
-      it("should call just the error listeners", () => {
+      it("should convert to Error and call just the error listeners", () => {
         const worker = WorkerMock.create<TestRequest, TestResponse>(() => {
           throw 90;
         });

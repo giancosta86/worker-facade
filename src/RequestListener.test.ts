@@ -10,11 +10,13 @@ describe("Request listener", () => {
 
         const worker = new Worker(join(__dirname, "test", "worker-thread.ts"), {
           execArgv: ["--require", "@swc-node/register"]
-        }).on("exit", code => {
-          if (!code) {
+        }).on("exit", exitCode => {
+          if (!exitCode) {
             resolve();
           } else {
-            reject(new Error(`Worker stopped with exit code ${code}`));
+            reject(
+              new Error(`Worker thread stopped with exit code ${exitCode}`)
+            );
           }
         });
 
@@ -22,10 +24,6 @@ describe("Request listener", () => {
 
         workerFacade.addListener("message", response => {
           const expectedResponse = expectedResponses.shift();
-          if (expectedResponse === undefined) {
-            return resolve();
-          }
-
           expect(response).toBe(expectedResponse);
         });
 

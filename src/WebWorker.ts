@@ -1,19 +1,22 @@
-import { WorkerFacade } from "./WorkerFacade";
+import { EventListenerMap, EventType, WorkerFacade } from "./WorkerFacade";
 
 export class WebWorker<TRequest, TResponse>
   implements WorkerFacade<TRequest, TResponse>
 {
   private readonly worker: Worker;
 
-  private readonly dataListenersToEventListenersMap = new Map<any, any>();
+  private readonly dataListenersToEventListenersMap = new Map<
+    (value: any) => void,
+    any
+  >();
 
   private constructor(scriptURL: string | URL, options?: WorkerOptions) {
     this.worker = new Worker(scriptURL, options);
   }
 
-  addListener<E extends WorkerFacade.EventType>(
+  addListener<E extends EventType>(
     eventType: E,
-    listener: WorkerFacade.EventListenerMap<TResponse>[E]
+    listener: EventListenerMap<TResponse>[E]
   ): void {
     const eventListener = (event: any) => {
       switch (eventType) {
@@ -36,16 +39,16 @@ export class WebWorker<TRequest, TResponse>
     this.worker.addEventListener(eventType, eventListener);
   }
 
-  removeListener<E extends WorkerFacade.EventType>(
+  removeListener<E extends EventType>(
     eventType: E,
-    listener: WorkerFacade.EventListenerMap<TResponse>[E]
+    listener: EventListenerMap<TResponse>[E]
   ): void {
     const eventListener = this.dataListenersToEventListenersMap.get(listener);
 
     this.worker.removeEventListener(eventType, eventListener);
   }
 
-  postMessage(request: TRequest): void {
-    this.worker.postMessage(request);
+  postMessage(request: TRequest, ...options: readonly any[]): void {
+    this.worker.postMessage(request, ...options);
   }
 }
