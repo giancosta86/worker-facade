@@ -1,7 +1,7 @@
 import { RequestListener } from "./RequestListener";
 import {
   ErrorListener,
-  EventListenerMap,
+  ListenerMap,
   EventType,
   MessageListener,
   WorkerFacade
@@ -73,7 +73,7 @@ export class WorkerMock<TRequest, TResponse>
 
   addListener<E extends EventType>(
     eventType: E,
-    listener: EventListenerMap<TResponse>[E]
+    listener: ListenerMap<TResponse>[E]
   ): void {
     switch (eventType) {
       case "message":
@@ -89,7 +89,7 @@ export class WorkerMock<TRequest, TResponse>
 
   removeListener<E extends EventType>(
     eventType: E,
-    listener: EventListenerMap<TResponse>[E]
+    listener: ListenerMap<TResponse>[E]
   ): void {
     switch (eventType) {
       case "message":

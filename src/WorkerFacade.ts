@@ -4,7 +4,7 @@ export type MessageListener<T> = (message: T) => void;
 
 export type ErrorListener = (error: Error) => void;
 
-export interface EventListenerMap<TMessage> {
+export interface ListenerMap<TMessage> {
   message: MessageListener<TMessage>;
   messageerror: ErrorListener;
   error: ErrorListener;
@@ -13,12 +13,12 @@ export interface EventListenerMap<TMessage> {
 export interface WorkerFacade<TRequest, TResponse> {
   addListener<E extends EventType>(
     eventType: E,
-    listener: EventListenerMap<TResponse>[E]
+    listener: ListenerMap<TResponse>[E]
   ): void;
 
   removeListener<E extends EventType>(
     eventType: E,
-    listener: EventListenerMap<TResponse>[E]
+    listener: ListenerMap<TResponse>[E]
   ): void;
 
   postMessage(request: TRequest, ...options: readonly any[]): void;
