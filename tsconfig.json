@@ -1,5 +1,6 @@
 {
   "include": ["./src/**/*", "./global.d.ts"],
+  "exclude": ["cypress.config.ts", "cypress", "node_modules"],
 
   "compilerOptions": {
     "target": "ES2015",
