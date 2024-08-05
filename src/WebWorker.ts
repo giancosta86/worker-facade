@@ -9,16 +9,29 @@ import {
 export class WebWorker<TRequest, TResponse>
   implements WorkerFacade<TRequest, TResponse>
 {
-  private readonly worker: Worker;
-
   private readonly eventListenersByListenersMap = new Map<
     MessageListener<TResponse> | ErrorListener,
     (event: any) => void
   >();
 
-  private constructor(scriptURL: string | URL, options?: WorkerOptions) {
-    this.worker = new Worker(scriptURL, options);
+  static wrap<TRequest, TResponse>(
+    worker: Worker
+  ): WebWorker<TRequest, TResponse> {
+    return new WebWorker(worker);
   }
+
+  static create<TRequest, TResponse>(
+    globalSelf: Window & typeof globalThis,
+    scriptURL: string | URL,
+    options?: WorkerOptions
+  ): WebWorker<TRequest, TResponse> {
+    console.log("--------> CREATING WORKER FROM WINDOW:", globalSelf);
+    const worker = new globalSelf.Worker(scriptURL, options);
+    console.log("--------> WORKER CREATED", worker);
+    return new WebWorker(worker);
+  }
+
+  private constructor(private readonly worker: Worker) {}
 
   addListener<E extends EventType>(
     eventType: E,
